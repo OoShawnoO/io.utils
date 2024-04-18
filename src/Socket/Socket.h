@@ -24,7 +24,7 @@ using SOCKET = int;
 using FD = int;
 #elif _WIN32
 
-#include <WinSock2.h>
+#include <winsock2.h>
 
 #pragma comment(lib,"ws2_32.lib")
 
@@ -83,13 +83,13 @@ namespace hzd {
          * @param data 数据地址 & data address
          * @return >0 表示成功发送字节数,0表示需要稍后再次调用,-1表示失败 & return >0 for success send bytes count,0 for again,-1 for failed
          */
-        virtual long long sendImpl_(const char* data) = 0;
+        virtual long sendImpl_(const char* data) = 0;
         /**
          * 接收数据 & recv data
          * @param data 保存数据的字符串数据 & string for data-save
          * @return >0 表示成功接收的字节数,0表示需要稍后再次调用,-1表示失败 & return >0 for success recv bytes count,0 for again,-1 for failed
          */
-        virtual long long recvImpl_(std::string& data) = 0;
+        virtual long recvImpl_(std::string& data) = 0;
     public:
         /**
          * 构造函数
@@ -128,14 +128,19 @@ namespace hzd {
          * @param size 需要发送的数据大小 & size of data need send
          * @return >0 表示成功发送字节数,0表示需要稍后再次调用,-1表示失败 & return >0 for success send bytes count,0 for again,-1 for failed
          */
-        virtual long long Send(const char* data,size_t size) = 0;
+        virtual long Send(const char* data,size_t size) = 0;
         /**
          * 发送数据 & send data
          * @param data 数据地址 & data address
          * @return >0 表示成功发送字节数,0表示需要稍后再次调用,-1表示失败 & return >0 for success send bytes count,0 for again,-1 for failed
          */
-        virtual long long Send(const std::string& data);
-        virtual long long Send(std::string& data);
+        virtual long Send(const std::string& data);
+        /**
+         * 发送数据 & send data
+         * @param data 数据地址 & data address
+         * @return >0 表示成功发送字节数,0表示需要稍后再次调用,-1表示失败 & return >0 for success send bytes count,0 for again,-1 for failed
+         */
+        virtual long Send(std::string& data);
         /**
          * 接收数据 & recv data
          * @param data 保存数据的字符串数据 & string for data-save
@@ -143,7 +148,7 @@ namespace hzd {
          * @param is_append 是否在字符串基础上添加 & whether append to raw string
          * @return >0 表示成功接收的字节数,0表示需要稍后再次调用,-1表示失败 & return >0 for success recv bytes count,0 for again,-1 for failed
          */
-        virtual long long Recv(std::string& data,size_t size,bool is_append) = 0;
+        virtual long Recv(std::string& data,size_t size,bool is_append) = 0;
         /**
          * 发送文件 & send file
          * @param file_path 文件路径 & file path
@@ -170,18 +175,22 @@ namespace hzd {
         TcpSocket(TcpSocket&& tcp_socket) noexcept;
         TcpSocket& operator=(TcpSocket&& tcp_socket) noexcept;
 
-        long long Send(const char *data, size_t size) override;
+        long Send(const char *data, size_t size) override;
 
-        long long Recv(std::string &data, size_t size, bool is_append) override;
+        long Send(const std::string& data) override;
+
+        long Send(std::string& data) override;
+
+        long Recv(std::string &data, size_t size, bool is_append) override;
 
         bool SendFile(const std::string &file_path) override;
 
         bool RecvFile(const std::string &file_path, size_t file_size) override;
 
     protected:
-        long long sendImpl_(const char *data) override;
+        long sendImpl_(const char *data) override;
 
-        long long recvImpl_(std::string &data) override;
+        long recvImpl_(std::string &data) override;
     };
 
     class TcpListener : public TcpSocket {
@@ -225,23 +234,56 @@ namespace hzd {
         sockaddr_in             from_addr{};
         int                     from_addr_size{sizeof(sockaddr_in)};
     private:
-        long long Send(const char *data, size_t size) override;
+        long Send(const char *data, size_t size) override;
+
+        long Send(const std::string& data) override;
+
+        long Send(std::string& data) override;
 
         bool SendFile(const std::string &file_path) override;
 
-        long long sendImpl_(const char *data) override;
+        long sendImpl_(const char *data) override;
 
-        long long recvImpl_(std::string &data) override;
+        long recvImpl_(std::string &data) override;
     public:
         UdpSocket() : Socket(SOCK_DGRAM) {_init();}
 
         bool Bind(const std::string& ip,unsigned short port);
+        /**
+         * 发送数据到ip:port & send data to ip:port
+         * @param ip 目标ip & destination ip
+         * @param port 目标端口 & destination port
+         * @param data 数据地址 & data address
+         * @param size 数据大小 & data size
+         * @return >0 表示成功接收的字节数,0表示需要稍后再次调用,-1表示失败 & return >0 for success recv bytes count,0 for again,-1 for failed
+         */
+        long SendTo(const std::string& ip,unsigned short port,const char* data,size_t size);
+        /**
+         * 发送数据到ip:port & send data to ip:port
+         * @param ip 目标ip & destination ip
+         * @param port 目标端口 & destination port
+         * @param data 数据地址 & data address
+         * @return >0 表示成功接收的字节数,0表示需要稍后再次调用,-1表示失败 & return >0 for success recv bytes count,0 for again,-1 for failed
+         */
+        long SendTo(const std::string& ip,unsigned short port,const std::string& data);
+        /**
+         * 发送数据到ip:port & send data to ip:port
+         * @param ip 目标ip & destination ip
+         * @param port 目标端口 & destination port
+         * @param data 数据地址 & data address
+         * @return >0 表示成功接收的字节数,0表示需要稍后再次调用,-1表示失败 & return >0 for success recv bytes count,0 for again,-1 for failed
+         */
+        long SendTo(const std::string& ip,unsigned short port,std::string& data);
+        /**
+         * 发送文件到ip:port & send file to ip:port
+         * @param ip 目标ip & destination ip
+         * @param port 目标端口 & destination port
+         * @param file_path 文件路径 & file path
+         * @return
+         */
+        bool SendFileTo(const std::string& ip,unsigned short port,const std::string& file_path);
 
-        long long _Send(const std::string& ip,unsigned short port,const char* data,size_t size);
-
-        long long _SendFile(const std::string& ip,unsigned short port,const std::string& file_path);
-
-        long long Recv(std::string &data, size_t size, bool is_append) override;
+        long Recv(std::string &data, size_t size, bool is_append) override;
 
         bool RecvFile(const std::string &file_path, size_t file_size) override;
     };

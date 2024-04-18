@@ -6,21 +6,20 @@
   * @date           : 2024/4/17
   ******************************************************************************
   */
-
-#include <Mole.h>
-
-#include "Socket.h"
-#include <fstream>
 #ifdef __linux__
 #include <fcntl.h>
 #include <cstring>
 #include <sys/sendfile.h>
 #include <sys/stat.h>
-
 #elif _WIN32
-
+#define _CRT_SECURE_NO_WARNINGS
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <WS2tcpip.h>
 #endif
+#include <Mole.h>
+#include "Socket.h"
+#include <fstream>
+
 
 namespace hzd {
 #ifdef _WIN32
@@ -108,7 +107,7 @@ namespace hzd {
         #elif _WIN32
             int flag = 0;
         #endif
-            if((had_send_bytes = send(sock,data + send_cursor,need_send_bytes,flag)) <= 0) {
+            if((had_send_bytes = send(sock,data + send_cursor,static_cast<int>(need_send_bytes),flag)) <= 0) {
                 if(errno == EAGAIN || errno == EWOULDBLOCK) {
                     is_new = false;
                     return 0;
@@ -124,11 +123,10 @@ namespace hzd {
             send_cursor += had_send_bytes;
         }
         is_new = true;
-        return send_bytes_count;
+        return static_cast<ssize_t>(send_bytes_count);
     }
 
     ssize_t TcpSocket::recvImpl_(std::string &data) {
-        size_t need_recv_bytes;
         ssize_t had_recv_bytes;
         if(data.size() < recv_bytes_count) {
             data.reserve(recv_bytes_count);
@@ -136,8 +134,7 @@ namespace hzd {
         char buffer[4096] = {0};
         while(recv_cursor < recv_bytes_count) {
             memset(buffer,0,sizeof(buffer));
-            need_recv_bytes = recv_bytes_count - recv_cursor;
-            if((had_recv_bytes = recv(sock,buffer,need_recv_bytes > sizeof(buffer) ? sizeof(buffer) : need_recv_bytes,0)) <= 0) {
+            if((had_recv_bytes = recv(sock,buffer,sizeof(buffer),0)) <= 0) {
                 if(errno == EAGAIN || errno == EWOULDBLOCK) {
                     is_new = false;
                     return 0;
@@ -154,7 +151,7 @@ namespace hzd {
             data.append(buffer,had_recv_bytes);
         }
         is_new = true;
-        return recv_bytes_count;
+        return static_cast<ssize_t>(recv_bytes_count);
     }
 
     ssize_t TcpSocket::Send(const char *data, size_t size) {
@@ -222,11 +219,11 @@ namespace hzd {
             is_new = false;
         }
         size_t need_send_bytes;
-        ssize_t had_send_bytes = -1;
+        ssize_t had_send_bytes;
         char send_buffer[4096] = {0};
         while(send_cursor < send_bytes_count) {
             need_send_bytes = fread(send_buffer,sizeof(char),sizeof(send_buffer),fd);
-            if((had_send_bytes = send(sock,send_buffer,need_send_bytes,0))<= 0) {
+            if((had_send_bytes = send(sock,send_buffer,static_cast<int>(need_send_bytes),0))<= 0) {
                 if(errno == EAGAIN || errno == EWOULDBLOCK) {
                     continue;
                 }
@@ -337,6 +334,14 @@ namespace hzd {
         return *this;
     }
 
+    long TcpSocket::Send(const std::string &data) {
+        return Socket::Send(data);
+    }
+
+    long TcpSocket::Send(std::string &data) {
+        return Socket::Send(data);
+    }
+
     TcpListener::TcpListener(const std::string &ip, unsigned short port) {
         self_addr.sin_family = AF_INET;
         self_addr.sin_addr.s_addr = inet_addr(ip.c_str());
@@ -410,7 +415,7 @@ namespace hzd {
 #elif _WIN32
             int flag = 0;
 #endif
-            if((had_send_bytes = sendto(sock,data + send_cursor,need_send_bytes,flag,(const sockaddr*)&dest_addr,sizeof(dest_addr))) <= 0) {
+            if((had_send_bytes = sendto(sock,data + send_cursor,static_cast<int>(need_send_bytes),flag,(const sockaddr*)&dest_addr,sizeof(dest_addr))) <= 0) {
                 if(errno == EAGAIN || errno == EWOULDBLOCK) {
                     is_new = false;
                     return 0;
@@ -426,19 +431,17 @@ namespace hzd {
             send_cursor += had_send_bytes;
         }
         is_new = true;
-        return send_bytes_count;
+        return static_cast<ssize_t>(send_bytes_count);
     }
 
     ssize_t UdpSocket::recvImpl_(std::string &data) {
-        size_t need_recv_bytes;
         ssize_t had_recv_bytes;
         if(data.size() < recv_bytes_count) {
             data.reserve(recv_bytes_count);
         }
         char buffer[4096] = {0};
         while(recv_cursor < recv_bytes_count) {
-            need_recv_bytes = recv_bytes_count - recv_cursor;
-            if((had_recv_bytes = recvfrom(sock,buffer,need_recv_bytes > sizeof(buffer) ? sizeof(buffer) : need_recv_bytes,0,(struct sockaddr*)&from_addr,(int*)&from_addr_size)) <= 0) {
+            if((had_recv_bytes = recvfrom(sock,buffer,sizeof(buffer),0,(struct sockaddr*)&from_addr,(socklen_t*)&from_addr_size)) <= 0) {
                 if(errno == EAGAIN || errno == EWOULDBLOCK) {
                     is_new = false;
                     return 0;
@@ -455,7 +458,7 @@ namespace hzd {
             data.append(buffer,had_recv_bytes);
         }
         is_new = true;
-        return recv_bytes_count;
+        return static_cast<ssize_t>(recv_bytes_count);
     }
 
     ssize_t UdpSocket::Send(const char *data, size_t size) {
@@ -529,7 +532,7 @@ namespace hzd {
         char send_buffer[4096] = {0};
         while(send_cursor < send_bytes_count) {
             need_send_bytes = fread(send_buffer,1,sizeof(send_buffer),fd);
-            if((had_send_bytes = sendto(sock,send_buffer,need_send_bytes,0,(sockaddr*)&dest_addr,sizeof(dest_addr))) < 0) {
+            if((had_send_bytes = sendto(sock,send_buffer,static_cast<int>(need_send_bytes),0,(sockaddr*)&dest_addr,sizeof(dest_addr))) < 0) {
                 if(errno == EAGAIN || errno == EWOULDBLOCK) {
                     continue;
                 }
@@ -609,14 +612,14 @@ namespace hzd {
 #endif
     }
 
-    ssize_t UdpSocket::_Send(const std::string &ip, unsigned short port, const char *data, size_t size) {
+    ssize_t UdpSocket::SendTo(const std::string &ip, unsigned short port, const char *data, size_t size) {
         dest_addr.sin_family = AF_INET;
         dest_addr.sin_port = htons(port);
         dest_addr.sin_addr.s_addr = inet_addr(ip.c_str());
         return Send(data,size);
     }
 
-    ssize_t UdpSocket::_SendFile(const std::string &ip, unsigned short port, const std::string &file_path) {
+    bool UdpSocket::SendFileTo(const std::string &ip, unsigned short port, const std::string &file_path) {
         dest_addr.sin_family = AF_INET;
         dest_addr.sin_port = htons(port);
         dest_addr.sin_addr.s_addr = inet_addr(ip.c_str());
@@ -629,5 +632,27 @@ namespace hzd {
         self_addr.sin_port = htons(port);
 
         return bind(sock,(sockaddr*)&self_addr,sizeof(self_addr)) >= 0;
+    }
+
+    long UdpSocket::Send(const std::string &data) {
+        return Socket::Send(data);
+    }
+
+    long UdpSocket::Send(std::string &data) {
+        return Socket::Send(data);
+    }
+
+    long UdpSocket::SendTo(const std::string &ip, unsigned short port, const std::string &data) {
+        dest_addr.sin_family = AF_INET;
+        dest_addr.sin_port = htons(port);
+        dest_addr.sin_addr.s_addr = inet_addr(ip.c_str());
+        return Send(data);
+    }
+
+    long UdpSocket::SendTo(const std::string &ip, unsigned short port, std::string &data) {
+        dest_addr.sin_family = AF_INET;
+        dest_addr.sin_port = htons(port);
+        dest_addr.sin_addr.s_addr = inet_addr(ip.c_str());
+        return Send(data);
     }
 } // hzd
