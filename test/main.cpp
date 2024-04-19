@@ -76,7 +76,7 @@ TEST(TEST_TCP,SEND_RECV_FILE) {
     bool is_end = false;
 
     auto fp = fopen("../test/main.cpp","rb");
-    EXPECT_NE(fp,nullptr);
+    ASSERT_NE(fp,nullptr);
     struct stat stat{};
     fstat(fileno(fp),&stat);
 
@@ -93,7 +93,7 @@ TEST(TEST_TCP,SEND_RECV_FILE) {
     std::string str;
     tcp.RecvFile("../test/temp_main.cpp",stat.st_size);
     auto fp_ = fopen("../test/temp_main.cpp","rb");
-    EXPECT_NE(fp_,nullptr);
+    ASSERT_NE(fp_,nullptr);
     struct stat stat_{};
     fstat(fileno(fp_),&stat_);
     ASSERT_EQ(stat.st_size,stat_.st_size);
@@ -131,7 +131,7 @@ TEST(TEST_UDP,SEND_RECV_FILE) {
     bool is_end = false;
 
     auto fp = fopen("../test/main.cpp","rb");
-    EXPECT_NE(fp,nullptr);
+    ASSERT_NE(fp,nullptr);
     struct stat stat{};
     fstat(fileno(fp),&stat);
 
@@ -144,7 +144,7 @@ TEST(TEST_UDP,SEND_RECV_FILE) {
 
     listener.RecvFile("../test/temp_main.cpp",stat.st_size);
     auto fp_ = fopen("../test/temp_main.cpp","rb");
-    EXPECT_NE(fp_,nullptr);
+    ASSERT_NE(fp_,nullptr);
     struct stat stat_{};
     fstat(fileno(fp_),&stat_);
     ASSERT_EQ(stat.st_size,stat_.st_size);
@@ -155,11 +155,29 @@ TEST(TEST_UDP,SEND_RECV_FILE) {
 
 TEST(TEST_FILESYSTEM,COPY) {
     ASSERT_EQ(hzd::filesystem::copy("../test/main.cpp","../test/copy_main.cpp"),true);
-    ASSERT_EQ(hzd::filesystem::rm("../test/copy_main.cpp"),true);
+    ASSERT_EQ(hzd::filesystem::exists("../test/copy_main.cpp"),true);
+    ASSERT_EQ(hzd::filesystem::remove("../test/copy_main.cpp"),true);
+
     ASSERT_EQ(hzd::filesystem::copy("../test/main.cpp","copy_main.cpp"),true);
-    ASSERT_EQ(hzd::filesystem::rm("copy_main.cpp"),true);
+    ASSERT_EQ(hzd::filesystem::exists("copy_main.cpp"),true);
+    ASSERT_EQ(hzd::filesystem::remove("copy_main.cpp"),true);
+
     ASSERT_EQ(hzd::filesystem::copy("../test/main.cpp","./"),true);
-    ASSERT_EQ(hzd::filesystem::rm("./main.cpp"),true);
+    ASSERT_EQ(hzd::filesystem::exists("./main.cpp"),true);
+    ASSERT_EQ(hzd::filesystem::remove("./main.cpp"),true);
+
+    ASSERT_EQ(hzd::filesystem::copy("../test/_.cpp","./"),false);
+    ASSERT_EQ(hzd::filesystem::copy("../test/main.cpp","../test/1/1.cpp"),false);
+
+}
+
+TEST(TEST_FILESYSTEM,MOVE) {
+    ASSERT_EQ(hzd::filesystem::move("../test/test_move","./"),true);
+    ASSERT_EQ(hzd::filesystem::exists("../test/test_move"),false);
+    ASSERT_EQ(hzd::filesystem::exists("./test_move"),true);
+    ASSERT_EQ(hzd::filesystem::move("./test_move","../test/test_move"),true);
+    ASSERT_EQ(hzd::filesystem::exists("../test/test_move"),true);
+    ASSERT_EQ(hzd::filesystem::exists("./test_move"),false);
 }
 
 int main() {

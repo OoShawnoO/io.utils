@@ -16,22 +16,6 @@ namespace hzd {
 
     namespace filesystem {
 
-        enum FileSystemError {
-            None,
-            // 非文件类型 & not file type
-            NotFile,
-            // 非目录类型 & not directory type
-            NotDir,
-            // 权限拒绝 & permission deny
-            PermissionDeny,
-            // 文件或目录已经存在 & file or directory already exists
-            AlreadyExist,
-            // 文件或目录不存在 & file or dir not exist
-            FileSystemNotExist
-        };
-        static FileSystemError fserr = None;
-
-
         /**
          * 判断是否存在文件或目录
          * @return true表示存在,false表示不存在 & true for exist,false for not exist
@@ -80,7 +64,7 @@ namespace hzd {
          * 删除文件或目录 & delete file or directory
          * @return true表示成功,false表示失败 & true for success,false for failed
          */
-        bool rm(const std::string &path);
+        bool remove(const std::string &path);
 
         /**
          * 移动文件或重命名 & move file or directory,or rename
@@ -88,7 +72,12 @@ namespace hzd {
          */
         bool move(const std::string &src_path, const std::string &dest_path);
 
-    };
+        /**
+         * 重命名文件 & rename file
+         * @return true表示成功,false表示失败 & true for success,false for failed
+         */
+        bool rename(const std::string& old_name,const std::string& new_name);
+    }
 
 } // hzd
 
