@@ -9,15 +9,45 @@
 #include <Mole.h>
 #include "FileSystem.h"
 #include <fstream>
-#include <dirent.h>
+
 
 #ifdef __linux__
 #include <sys/stat.h>
 #include <unistd.h>
 #include <cstring>
-
+#include <dirent.h>
 #elif _WIN32
+
+#ifdef _M_AMD64
+#define _AMD64_
+#elif _M_IX86
+#define _X86_
+#elif _M_ARM64
+#define _ARM64EC_
+#elif _M_ARM
+#define _ARM_
+#else
+#endif
+#include <windef.h>
 #include <direct.h>
+#include <io.h>
+#include <fileapi.h>
+#include <errhandlingapi.h>
+#include <WinBase.h>
+
+namespace hzd {
+    std::string GetLastError_() noexcept {
+        LPSTR lpBuffer = nullptr;
+        DWORD dwFlags = FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
+        if(FormatMessageA(dwFlags,nullptr,GetLastError(),0,(LPSTR)&lpBuffer,0,nullptr)) {
+            std::string err = lpBuffer;
+            LocalFree(lpBuffer);
+            return err;
+        }
+        return "ErrorCode:" + std::to_string(GetLastError());
+    }
+}
+
 #endif
 
 
@@ -109,9 +139,17 @@ namespace hzd {
 
         bool createdir(const std::string &path) {
 #ifdef _WIN32
-            return mkdir(path.c_str()) == 0;
+            if(mkdir(path.c_str()) != 0) {
+                MOLE_ERROR(io.FileSystem,strerror(errno));
+                return false;
+            }
+            return true;
 #elif __linux__
-            return mkdir(path.c_str(),0755) == 0;
+            if(mkdir(path.c_str(),0755) != 0) {
+                MOLE_ERROR(io.FileSystem,strerror(errno));
+                return false;
+            }
+            return true;
 #endif
         }
 
@@ -129,6 +167,18 @@ namespace hzd {
         }
 
         bool remove(const std::string &path) {
+            struct stat st{};
+            if(!_exists(path,st)) {
+                MOLE_ERROR(io.FileSystem,"file or dir not exist",{MOLE_VAR(path)});
+                return false;
+            }
+            if(st.st_mode & S_IFDIR) {
+#ifdef __linux__
+                return rmdir(path.c_str()) == 0;
+#elif _WIN32
+                return _rmdir(path.c_str()) == 0;
+#endif
+            }
             return ::remove(path.c_str()) == 0;
         }
 
@@ -151,6 +201,7 @@ namespace hzd {
         }
 
         bool listdir(const std::string& path,std::vector<std::string>& dirs_name,std::vector<std::string>& files_name) {
+#ifdef __linux__
             DIR* dir = opendir(path.c_str());
             if(!dir) {
                 MOLE_ERROR(io.FileSystem,strerror(errno));
@@ -167,14 +218,47 @@ namespace hzd {
             }
             closedir(dir);
             return true;
+#elif _WIN32
+            _finddata_t file_data;
+            intptr_t handle;
+            handle = _findfirst((path + "\\*").c_str(),&file_data);
+            if(handle == -1L) {
+                MOLE_ERROR(io.FileSystem,"can't match path",{ MOLE_VAR(path )});
+                return false;
+            }
+            do {
+
+                if(file_data.attrib & _A_SUBDIR) {
+                    if(strcmp(file_data.name,".") == 0 || strcmp(file_data.name,"..") == 0) continue;
+                    dirs_name.emplace_back(file_data.name);
+                }else {
+                    files_name.emplace_back(file_data.name);
+                }
+
+            }while(_findnext(handle,&file_data) == 0);
+            return true;
+#endif
         }
 
         bool absolute(const std::string& path,std::string& absolute_path) {
+            if(!exists(path)) {
+                MOLE_ERROR(io.FileSystem,"no such file or dir");
+                return false;
+            }
+#ifdef __linux__
             char result[4096] = {0};
             if(!realpath(path.c_str(),result)) {
                 MOLE_ERROR(io.FileSystem,strerror(errno));
                 return false;
             }
+#elif _WIN32
+            char result[4096] = {0};
+            auto ret = GetFullPathName(path.c_str(),sizeof(result),result,nullptr);
+            if(ret == 0) {
+                MOLE_ERROR(io.FileSystem,GetLastError_());
+                return false;
+            }
+#endif
             absolute_path = result;
             return true;
         }

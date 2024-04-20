@@ -154,6 +154,31 @@ TEST(TEST_UDP,SEND_RECV_FILE) {
     remove("../test/temp_main.cpp");
 }
 
+TEST(TEST_FILESYSTEM,EXSISTS) {
+    ASSERT_EQ(hzd::filesystem::exists("../test/main.cpp"),true);
+    ASSERT_EQ(hzd::filesystem::exists("../test/_.cpp"),false);
+}
+
+TEST(TEST_FILESYSTEM,IS_FILE_AND_IS_DIRECTORY) {
+    ASSERT_EQ(hzd::filesystem::is_file("../test/main.cpp"),true);
+    ASSERT_EQ(hzd::filesystem::is_file("../test"),false);
+    ASSERT_EQ(hzd::filesystem::is_directory("../test"),true);
+    ASSERT_EQ(hzd::filesystem::is_directory("../test/main.cpp"),false);
+}
+
+TEST(TEST_FILESYSTEM,CREATE_DIR) {
+    ASSERT_EQ(hzd::filesystem::remove("../test/test_create_dir"),true);
+    ASSERT_EQ(hzd::filesystem::createdir("../test/test_create_dir"),true);
+    ASSERT_EQ(hzd::filesystem::createdir("../test/test_create_dir"),false);
+}
+
+TEST(TEST_FILESYSTEM,FSIZE) {
+    struct stat st{};
+    stat("../test/main.cpp",&st);
+    ASSERT_EQ(hzd::filesystem::fsize("../test/main.cpp"),st.st_size);
+}
+
+
 TEST(TEST_FILESYSTEM,COPY) {
     ASSERT_EQ(hzd::filesystem::copy("../test/main.cpp","../test/copy_main.cpp"),true);
     ASSERT_EQ(hzd::filesystem::exists("../test/copy_main.cpp"),true);

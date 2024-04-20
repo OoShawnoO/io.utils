@@ -2,7 +2,7 @@
   ******************************************************************************
   * @file           : Socket.h
   * @author         : huzhida
-  * @brief          : None
+  * @brief          : 跨平台Socket实现
   * @date           : 2024/4/17
   ******************************************************************************
   */
@@ -286,6 +286,10 @@ namespace hzd {
         long Recv(std::string &data, size_t size, bool is_append) override;
 
         bool RecvFile(const std::string &file_path, size_t file_size) override;
+        /**
+         * @return 接受数据的来源地址 & data-recv from address
+         */
+        sockaddr_in FromAddr() const;
     };
 } // hzd
 

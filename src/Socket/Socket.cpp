@@ -655,4 +655,8 @@ namespace hzd {
         dest_addr.sin_addr.s_addr = inet_addr(ip.c_str());
         return Send(data);
     }
+
+    sockaddr_in UdpSocket::FromAddr() const {
+        return from_addr;
+    }
 } // hzd
