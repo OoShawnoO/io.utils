@@ -11,6 +11,7 @@
 #define IO_UTILS_FILESYSTEM_H
 
 #include <string>
+#include <vector>
 
 namespace hzd {
 
@@ -77,6 +78,18 @@ namespace hzd {
          * @return true表示成功,false表示失败 & true for success,false for failed
          */
         bool rename(const std::string& old_name,const std::string& new_name);
+
+        /**
+         * 列表目录下文件或目录名 & list files or dirs in path
+         * @return true表示成功,false表示失败 & true for success,false for failed
+         */
+        bool listdir(const std::string& path,std::vector<std::string>& dirs_name,std::vector<std::string>& files_name);
+
+        /**
+         * 获取文件或目录的绝对路径 & get absolute path for file or dir
+         * @return true表示成功,false表示失败 & true for success,false for failed
+         */
+        bool absolute(const std::string& path,std::string& absolute_path);
     }
 
 } // hzd

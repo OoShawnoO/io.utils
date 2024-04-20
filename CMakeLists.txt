@@ -23,6 +23,9 @@ find_package(GTest)
 enable_testing()
 add_executable(test_ test/main.cpp ${SOCKET_SOURCES} ${FILESYSTEM_SOURCES})
 
+#add_library(Socket SHARED ${SOCKET_SOURCES})
+#add_library(FileSystem SHARED ${FILESYSTEM_SOURCES})
+
 target_link_libraries(test_ PRIVATE Mole)
 target_link_libraries(test_ PRIVATE GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
 

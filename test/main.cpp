@@ -9,6 +9,7 @@
 
 #include "../src/Socket/Socket.h"
 #include "../src/FileSystem/FileSystem.h"
+#include <Mole.h>
 #include <gtest/gtest.h>
 #include <thread>
 
@@ -178,6 +179,15 @@ TEST(TEST_FILESYSTEM,MOVE) {
     ASSERT_EQ(hzd::filesystem::move("./test_move","../test/test_move"),true);
     ASSERT_EQ(hzd::filesystem::exists("../test/test_move"),true);
     ASSERT_EQ(hzd::filesystem::exists("./test_move"),false);
+
+}
+
+TEST(TEST_FILESYSTEM,LIST_DIR_AND_ABS) {
+    std::vector<std::string> files,dirs;
+    ASSERT_EQ(hzd::filesystem::listdir("./",dirs,files),true);
+    std::string abs_;
+    ASSERT_EQ(hzd::filesystem::absolute(files[0],abs_),true);
+    ASSERT_EQ(hzd::filesystem::absolute("123.txt",abs_),false);
 }
 
 int main() {

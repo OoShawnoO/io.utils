@@ -9,6 +9,7 @@
 #include <Mole.h>
 #include "FileSystem.h"
 #include <fstream>
+#include <dirent.h>
 
 #ifdef __linux__
 #include <sys/stat.h>
@@ -149,5 +150,33 @@ namespace hzd {
             }
         }
 
+        bool listdir(const std::string& path,std::vector<std::string>& dirs_name,std::vector<std::string>& files_name) {
+            DIR* dir = opendir(path.c_str());
+            if(!dir) {
+                MOLE_ERROR(io.FileSystem,strerror(errno));
+                return false;
+            }
+            struct dirent* entry;
+            while((entry = readdir(dir))) {
+                if(entry->d_type == DT_DIR) {
+                    if(strcmp(".",entry->d_name) == 0 || strcmp("..",entry->d_name) == 0) continue;
+                    dirs_name.emplace_back(entry->d_name);
+                }else{
+                    files_name.emplace_back(entry->d_name);
+                }
+            }
+            closedir(dir);
+            return true;
+        }
+
+        bool absolute(const std::string& path,std::string& absolute_path) {
+            char result[4096] = {0};
+            if(!realpath(path.c_str(),result)) {
+                MOLE_ERROR(io.FileSystem,strerror(errno));
+                return false;
+            }
+            absolute_path = result;
+            return true;
+        }
     }
 } // hzd
