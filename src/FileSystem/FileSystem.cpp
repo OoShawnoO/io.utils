@@ -65,7 +65,7 @@ namespace hzd {
         bool is_file(const std::string &path) {
             struct stat st{};
             if(!_exists(path,st)) {
-                MOLE_ERROR(io.FileSystem,"file not exist",{ MOLE_VAR(path) });
+                MOLE_ERROR("io.FileSystem","file not exist",{ MOLE_VAR(path) });
                 return false;
             }
             return st.st_mode & S_IFREG;
@@ -74,7 +74,7 @@ namespace hzd {
         bool is_directory(const std::string &path) {
             struct stat st{};
             if(!_exists(path,st)) {
-                MOLE_ERROR(io.FileSystem,"dir not exist",{ MOLE_VAR(path) });
+                MOLE_ERROR("io.FileSystem","dir not exist",{ MOLE_VAR(path) });
                 return false;
             }
             return st.st_mode & S_IFDIR;
@@ -83,12 +83,12 @@ namespace hzd {
         bool copy(const std::string &src_path, const std::string &dest_path,bool is_overwrite) {
             struct stat src_st{},dest_st{};
             if(!_exists(src_path,src_st)) {
-                MOLE_ERROR(io.FileSystem,"source file not exist",{ MOLE_VAR(src_path) });
+                MOLE_ERROR("io.FileSystem","source file not exist",{ MOLE_VAR(src_path) });
                 return false;
             }
 
             if(src_st.st_mode & S_IFDIR) {
-                MOLE_ERROR(io.FileSystem,"source path is dir,not file",{ MOLE_VAR(src_path)});
+                MOLE_ERROR("io.FileSystem","source path is dir,not file",{ MOLE_VAR(src_path)});
                 return false;
             }
 
@@ -104,7 +104,7 @@ namespace hzd {
             if(!_exists(dest_path,dest_st)) {
                 std::ofstream dest(dest_path);
                 if(!dest.is_open()) {
-                    MOLE_ERROR(io.FileSystem,"destination can't access.",{MOLE_VAR(dest_path)});
+                    MOLE_ERROR("io.FileSystem","destination can't access.",{MOLE_VAR(dest_path)});
                     return false;
                 }
                 dest << src.rdbuf();
@@ -117,7 +117,7 @@ namespace hzd {
                 }
                 else {
                     if(!is_overwrite) {
-                        MOLE_ERROR(io.FileSystem,"destination file already exist,maybe set is_overwrite = true?",{ MOLE_VAR(dest_path) });
+                        MOLE_ERROR("io.FileSystem","destination file already exist,maybe set is_overwrite = true?",{ MOLE_VAR(dest_path) });
                         return false;
                     }
                     std::ofstream dest(dest_path,std::ios::out | std::ios::trunc);
@@ -140,13 +140,13 @@ namespace hzd {
         bool createdir(const std::string &path) {
 #ifdef _WIN32
             if(mkdir(path.c_str()) != 0) {
-                MOLE_ERROR(io.FileSystem,strerror(errno));
+                MOLE_ERROR("io.FileSystem",strerror(errno));
                 return false;
             }
             return true;
 #elif __linux__
             if(mkdir(path.c_str(),0755) != 0) {
-                MOLE_ERROR(io.FileSystem,strerror(errno));
+                MOLE_ERROR("io.FileSystem",strerror(errno));
                 return false;
             }
             return true;
@@ -156,11 +156,11 @@ namespace hzd {
         long long int fsize(const std::string &path) {
             struct stat st{};
             if(!_exists(path,st)) {
-                MOLE_ERROR(io.FileSystem,"file not exist",{ MOLE_VAR(path) });
+                MOLE_ERROR("io.FileSystem","file not exist",{ MOLE_VAR(path) });
                 return -1;
             }
             if(st.st_mode & S_IFDIR) {
-                MOLE_ERROR(io.FileSystem,"path to dir,not file",{ MOLE_VAR(path) });
+                MOLE_ERROR("io.FileSystem","path to dir,not file",{ MOLE_VAR(path) });
                 return -1;
             }
             return st.st_size;
@@ -169,7 +169,7 @@ namespace hzd {
         bool remove(const std::string &path) {
             struct stat st{};
             if(!_exists(path,st)) {
-                MOLE_ERROR(io.FileSystem,"file or dir not exist",{MOLE_VAR(path)});
+                MOLE_ERROR("io.FileSystem","file or dir not exist",{MOLE_VAR(path)});
                 return false;
             }
             if(st.st_mode & S_IFDIR) {
@@ -186,7 +186,7 @@ namespace hzd {
             bool ret = copy(src_path,dest_path);
             if(!ret) return false;
             if(!remove(src_path)) {
-                MOLE_ERROR(io.FileSystem,strerror(errno));
+                MOLE_ERROR("io.FileSystem",strerror(errno));
                 return false;
             }
             return true;
@@ -195,7 +195,7 @@ namespace hzd {
         bool rename(const std::string& old_name,const std::string& new_name) {
             if(::rename(old_name.c_str(),new_name.c_str()) == 0) return true;
             else {
-                MOLE_ERROR(io.FileSystem,strerror(errno));
+                MOLE_ERROR("io.FileSystem",strerror(errno));
                 return false;
             }
         }
@@ -204,7 +204,7 @@ namespace hzd {
 #ifdef __linux__
             DIR* dir = opendir(path.c_str());
             if(!dir) {
-                MOLE_ERROR(io.FileSystem,strerror(errno));
+                MOLE_ERROR("io.FileSystem",strerror(errno));
                 return false;
             }
             struct dirent* entry;
@@ -223,7 +223,7 @@ namespace hzd {
             intptr_t handle;
             handle = _findfirst((path + "\\*").c_str(),&file_data);
             if(handle == -1L) {
-                MOLE_ERROR(io.FileSystem,"can't match path",{ MOLE_VAR(path )});
+                MOLE_ERROR("io.FileSystem","can't match path",{ MOLE_VAR(path )});
                 return false;
             }
             do {
@@ -242,20 +242,20 @@ namespace hzd {
 
         bool absolute(const std::string& path,std::string& absolute_path) {
             if(!exists(path)) {
-                MOLE_ERROR(io.FileSystem,"no such file or dir");
+                MOLE_ERROR("io.FileSystem","no such file or dir");
                 return false;
             }
 #ifdef __linux__
             char result[4096] = {0};
             if(!realpath(path.c_str(),result)) {
-                MOLE_ERROR(io.FileSystem,strerror(errno));
+                MOLE_ERROR("io.FileSystem",strerror(errno));
                 return false;
             }
 #elif _WIN32
             char result[4096] = {0};
             auto ret = GetFullPathName(path.c_str(),sizeof(result),result,nullptr);
             if(ret == 0) {
-                MOLE_ERROR(io.FileSystem,GetLastError_());
+                MOLE_ERROR("io.FileSystem",GetLastError_());
                 return false;
             }
 #endif

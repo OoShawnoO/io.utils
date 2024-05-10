@@ -42,7 +42,7 @@ namespace hzd {
             WSADATA wsa_data;
             int err = WSAStartup(MAKEWORD(2,2),&wsa_data);
             if(err != 0) {
-                MOLE_ERROR(io.Socket,GetWASockError());
+                MOLE_ERROR("io.Socket",GetWASockError());
                 exit(-1);
             }
             is_startup = true;
@@ -61,13 +61,13 @@ namespace hzd {
 #ifdef __linux__
         ret = close(sock);
         if(ret == -1) {
-            MOLE_ERROR(io.Socket,strerror(errno));
+            MOLE_ERROR("io.Socket",strerror(errno));
             return false;
         }
 #elif _WIN32
         ret = closesocket(sock);
         if(ret == SOCKET_ERROR) {
-            MOLE_ERROR(io.Socket,GetWASockError());
+            MOLE_ERROR("io.Socket",GetWASockError());
             return false;
         }
 #endif
@@ -113,9 +113,9 @@ namespace hzd {
                     return 0;
                 }
                 #ifdef __linux__
-                MOLE_ERROR(io.Socket,strerror(errno));
+                MOLE_ERROR("io.Socket",strerror(errno));
                 #elif _WIN32
-                MOLE_ERROR(io.Socket,GetWASockError());
+                MOLE_ERROR("io.Socket",GetWASockError());
                 #endif
                 is_new = true;
                 return -1;
@@ -140,9 +140,9 @@ namespace hzd {
                     return 0;
                 }
                 #ifdef __linux__
-                    MOLE_ERROR(io.Socket,strerror(errno));
+                    MOLE_ERROR("io.Socket",strerror(errno));
                 #elif _WIN32
-                MOLE_ERROR(io.Socket,GetWASockError());
+                MOLE_ERROR("io.Socket",GetWASockError());
                 #endif
                 is_new = true;
                 return -1;
@@ -179,7 +179,7 @@ namespace hzd {
         if(is_new) {
             fd = open(file_path.c_str(),O_RDONLY);
             if(fd < 0) {
-                MOLE_ERROR(io.Socket,strerror(errno));
+                MOLE_ERROR("io.Socket",strerror(errno));
                 return false;
             }
             struct stat stat{};
@@ -194,7 +194,7 @@ namespace hzd {
                 if(errno == EAGAIN || errno == EWOULDBLOCK) {
                     continue;
                 }
-                MOLE_ERROR(io.Socket,strerror(errno));
+                MOLE_ERROR("io.Socket",strerror(errno));
                 close(fd);
                 fd = -1;
                 return false;
@@ -209,7 +209,7 @@ namespace hzd {
         if(is_new) {
             fd = fopen(file_path.c_str(),"rb");
             if(!fd) {
-                MOLE_ERROR(io.Socket,strerror(errno));
+                MOLE_ERROR("io.Socket",strerror(errno));
                 return false;
             }
             fseek(fd,0,SEEK_END);
@@ -227,7 +227,7 @@ namespace hzd {
                 if(errno == EAGAIN || errno == EWOULDBLOCK) {
                     continue;
                 }
-                MOLE_ERROR(io.Socket,std::to_string(WSAGetLastError()));
+                MOLE_ERROR("io.Socket",std::to_string(WSAGetLastError()));
                 fclose(fd);
                 fd = nullptr;
                 return false;
@@ -274,7 +274,7 @@ namespace hzd {
         if(is_new) {
             fd = fopen(file_path.c_str(),"wb");
             if(fd == nullptr) {
-                MOLE_ERROR(io.Socket,strerror(errno));
+                MOLE_ERROR("io.Socket",strerror(errno));
                 return false;
             }
             recv_bytes_count = file_size;
@@ -288,7 +288,7 @@ namespace hzd {
                 if(errno == EAGAIN || errno == EWOULDBLOCK) {
                     continue;
                 }
-                MOLE_ERROR(io.Socket,strerror(errno));
+                MOLE_ERROR("io.Socket",strerror(errno));
                 fclose(fd);
                 fd = nullptr;
                 return false;
@@ -389,7 +389,7 @@ namespace hzd {
 
         while(connect(sock,(sockaddr*)&dest_addr,sizeof(dest_addr)) < 0){
             if(errno != EINPROGRESS && errno != EALREADY) {
-                MOLE_ERROR(io.Socket, strerror(errno));
+                MOLE_ERROR("io.Socket", strerror(errno));
                 return false;
             }
         }
@@ -397,7 +397,7 @@ namespace hzd {
         fcntl(sock,F_SETFL,option);
 #elif _WIN32
         if(connect(sock,(sockaddr*)&dest_addr,sizeof(dest_addr))< 0) {
-            MOLE_ERROR(io.Socket,strerror(errno));
+            MOLE_ERROR("io.Socket",strerror(errno));
             return false;
         }
 #endif
@@ -421,9 +421,9 @@ namespace hzd {
                     return 0;
                 }
 #ifdef __linux__
-                    MOLE_ERROR(io.Socket,strerror(errno));
+                    MOLE_ERROR("io.Socket",strerror(errno));
 #elif _WIN32
-                MOLE_ERROR(io.Socket,GetWASockError());
+                MOLE_ERROR("io.Socket",GetWASockError());
 #endif
                 is_new = true;
                 return -1;
@@ -447,9 +447,9 @@ namespace hzd {
                     return 0;
                 }
 #ifdef __linux__
-                MOLE_ERROR(io.Socket,strerror(errno));
+                MOLE_ERROR("io.Socket",strerror(errno));
 #elif _WIN32
-                MOLE_ERROR(io.Socket,std::to_string(WSAGetLastError()));
+                MOLE_ERROR("io.Socket",std::to_string(WSAGetLastError()));
 #endif
                 is_new = true;
                 return -1;
@@ -486,7 +486,7 @@ namespace hzd {
         if(is_new) {
             fd = open(file_path.c_str(),O_RDONLY);
             if(fd < 0) {
-                MOLE_ERROR(io.Socket,strerror(errno));
+                MOLE_ERROR("io.Socket",strerror(errno));
                 return false;
             }
             struct stat stat{};
@@ -503,7 +503,7 @@ namespace hzd {
                 if(errno == EAGAIN || errno == EWOULDBLOCK) {
                     continue;
                 }
-                MOLE_ERROR(io.Socket,strerror(errno));
+                MOLE_ERROR("io.Socket",strerror(errno));
                 close(fd);
                 fd = -1;
                 return false;
@@ -518,7 +518,7 @@ namespace hzd {
         if(is_new) {
             fd = fopen(file_path.c_str(),"rb");
             if(fd == nullptr) {
-                MOLE_ERROR(io.Socket,strerror(errno));
+                MOLE_ERROR("io.Socket",strerror(errno));
                 return false;
             }
             fseek(fd,0,SEEK_END);
@@ -536,7 +536,7 @@ namespace hzd {
                 if(errno == EAGAIN || errno == EWOULDBLOCK) {
                     continue;
                 }
-                MOLE_ERROR(io.Socket,strerror(errno));
+                MOLE_ERROR("io.Socket",strerror(errno));
                 fclose(fd);
                 fd = nullptr;
                 return false;
@@ -583,7 +583,7 @@ namespace hzd {
         if(is_new) {
             fd = fopen(file_path.c_str(),"wb");
             if(fd == nullptr) {
-                MOLE_ERROR(io.Socket,strerror(errno));
+                MOLE_ERROR("io.Socket",strerror(errno));
                 return false;
             }
             recv_bytes_count = file_size;
@@ -597,7 +597,7 @@ namespace hzd {
                 if(errno == EAGAIN || errno == EWOULDBLOCK) {
                     continue;
                 }
-                MOLE_ERROR(io.Socket,strerror(errno));
+                MOLE_ERROR("io.Socket",strerror(errno));
                 fclose(fd);
                 fd = nullptr;
                 return false;
