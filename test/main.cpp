@@ -9,7 +9,7 @@
 
 #include "../src/Socket/Socket.h"
 #include "../src/FileSystem/FileSystem.h"
-#include <Mole.h>
+#include "../src/TimerTask/TimerTask.h"
 #include <gtest/gtest.h>
 #include <thread>
 
@@ -214,6 +214,21 @@ TEST(TEST_FILESYSTEM,LIST_DIR_AND_ABS) {
     ASSERT_EQ(hzd::filesystem::absolute(files[0],abs_),true);
     ASSERT_EQ(hzd::filesystem::absolute("123.txt",abs_),false);
 }
+
+
+TEST(TEST_TIMERTASK,TIMER_TASK) {
+    hzd::TimerTask task(true);
+    int x = 0;
+    task.AddTask(100,false,[&x] { x += 1; });
+    ASSERT_NE(x,1);
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    ASSERT_EQ(x,1);
+    auto ret = task.AddTask(100,false,[&x] { x -= 1;});
+    task.CancelTask(ret);
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    ASSERT_EQ(x,1);
+}
+
 
 int main() {
     testing::InitGoogleTest();

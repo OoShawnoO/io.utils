@@ -16,12 +16,20 @@ set(SOCKET_SOURCES
 set(FILESYSTEM_SOURCES
         src/FileSystem/FileSystem.cpp
 )
+set(TIMERTASK_SOURCES
+        src/TimerTask/TimerTask.cpp
+)
+
 include_directories(3rdparty/Mole)
 
 find_package(GTest)
 
 enable_testing()
-add_executable(test_ test/main.cpp ${SOCKET_SOURCES} ${FILESYSTEM_SOURCES})
+add_executable(test_ test/main.cpp
+        ${SOCKET_SOURCES}
+        ${FILESYSTEM_SOURCES}
+        ${TIMERTASK_SOURCES}
+)
 
 #add_library(Socket SHARED ${SOCKET_SOURCES})
 #add_library(FileSystem SHARED ${FILESYSTEM_SOURCES})
