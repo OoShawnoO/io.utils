@@ -34,16 +34,19 @@ namespace hzd {
         if(detach) {
             timer_mutex = std::make_unique<std::mutex>();
             timer_semaphore = std::make_unique<Semaphore>(0);
+            timer_condition_variable = std::make_unique<std::condition_variable>();
             timer_thread = std::make_unique<std::thread>(DetachedLoop,this);
         }
     }
 
     bool TimerTask::CancelTask(const TimerTaskNodeBase &node) {
         if(timer_mutex) {
-            std::lock_guard<std::mutex> guard(*timer_mutex);
+            std::unique_lock<std::mutex> guard(*timer_mutex);
             auto iter = tasks.find(node);
             if(iter == tasks.end()) return false;
             tasks.erase(iter);
+            guard.unlock();
+            timer_condition_variable->notify_all();
             return true;
         }
         auto iter = tasks.find(node);
@@ -54,7 +57,7 @@ namespace hzd {
 
     bool TimerTask::RunTimerTask() {
         if(timer_mutex){
-            std::lock_guard<std::mutex> guard(*timer_mutex);
+            std::unique_lock<std::mutex> guard(*timer_mutex);
             auto iter = tasks.begin();
             if(tasks.end() != iter && iter->expire <= GetTicks()) {
                 iter->function();
@@ -74,7 +77,7 @@ namespace hzd {
 
     time_t TimerTask::TimeToNextTask() const {
         if(timer_mutex) {
-            std::lock_guard<std::mutex> guard(*timer_mutex);
+            std::unique_lock<std::mutex> guard(*timer_mutex);
             auto iter = tasks.begin();
             if(iter == tasks.end()) return -1;
             time_t duration = iter->expire - GetTicks();
@@ -96,16 +99,28 @@ namespace hzd {
         TimerTask& timer_task = *timer_task_object;
         while(!timer_task.timer_stop) {
             timer_task.timer_semaphore->Wait();
+    REIN:
             auto time_to_sleep = timer_task.TimeToNextTask();
             time_to_sleep = time_to_sleep > 0 ? time_to_sleep : 0;
-            std::this_thread::sleep_for(std::chrono::milliseconds(time_to_sleep));
-            timer_task.RunTimerTask();
+            {
+                std::unique_lock<std::mutex> timer_unique_lock(*timer_task.timer_mutex);
+                if (timer_task.timer_condition_variable->wait_for(
+                        timer_unique_lock,
+                        std::chrono::milliseconds(time_to_sleep)
+                ) != std::cv_status::timeout) {
+                    goto REIN;
+                }
+            }
+            while(timer_task.RunTimerTask());
         }
     }
 
     TimerTask::~TimerTask() {
         if(timer_thread) {
-            timer_stop = true;
+            {
+                std::unique_lock<std::mutex> guard(*timer_mutex);
+                timer_stop = true;
+            }
             timer_semaphore->SignalAll();
             timer_thread->join();
         }

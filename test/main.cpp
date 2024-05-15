@@ -227,6 +227,14 @@ TEST(TEST_TIMERTASK,TIMER_TASK) {
     task.CancelTask(ret);
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
     ASSERT_EQ(x,1);
+
+    task.AddTask(1000,false,[&x] { x = 3; });
+    std::this_thread::sleep_for((std::chrono::milliseconds(100)));
+    task.AddTask(500,false,[&x] { x = 2;});
+    std::this_thread::sleep_for((std::chrono::milliseconds(600)));
+    ASSERT_EQ(x,2);
+    std::this_thread::sleep_for((std::chrono::milliseconds(600)));
+    ASSERT_EQ(x,3);
 }
 
 

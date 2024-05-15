@@ -58,8 +58,8 @@ namespace hzd {
                 Args&&...                   args
         ) {
             if(timer_mutex){
-                std::lock_guard<std::mutex> guard(*timer_mutex);
                 auto function = [func,args...] { func(args...); };
+                std::unique_lock<std::mutex> guard(*timer_mutex);
                 auto& result = *tasks.insert(
                         TimerTaskNode{
                                 timer_gid++,
@@ -68,6 +68,8 @@ namespace hzd {
                                 std::move(function)
                         }
                 ).first;
+                guard.unlock();
+                timer_condition_variable->notify_all();
                 timer_semaphore->Signal();
                 return result;
             }
@@ -100,6 +102,7 @@ namespace hzd {
         std::set<TimerTaskNode,std::less<>>                     tasks;
         bool                                                    timer_stop = false;
         std::unique_ptr<Semaphore>                              timer_semaphore = nullptr;
+        std::unique_ptr<std::condition_variable>                timer_condition_variable = nullptr;
         std::unique_ptr<std::mutex>                             timer_mutex = nullptr;
         std::unique_ptr<std::thread>                            timer_thread = nullptr;
     };
