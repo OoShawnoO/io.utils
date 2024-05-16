@@ -219,22 +219,37 @@ TEST(TEST_FILESYSTEM,LIST_DIR_AND_ABS) {
 TEST(TEST_TIMERTASK,TIMER_TASK) {
     hzd::TimerTask task(true);
     int x = 0;
-    task.AddTask(100,false,[&x] { x += 1; });
+    task.AddTask(20,false,[&x] { x += 1; });
     ASSERT_NE(x,1);
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    std::this_thread::sleep_for(std::chrono::milliseconds(25));
     ASSERT_EQ(x,1);
-    auto ret = task.AddTask(100,false,[&x] { x -= 1;});
+    auto ret = task.AddTask(20,false,[&x] { x -= 1;});
     task.CancelTask(ret);
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    std::this_thread::sleep_for(std::chrono::milliseconds(25));
     ASSERT_EQ(x,1);
 
-    task.AddTask(1000,false,[&x] { x = 3; });
-    std::this_thread::sleep_for((std::chrono::milliseconds(100)));
-    task.AddTask(500,false,[&x] { x = 2;});
-    std::this_thread::sleep_for((std::chrono::milliseconds(600)));
+    task.AddTask(50,false,[&x] { x = 3; });
+    std::this_thread::sleep_for((std::chrono::milliseconds(10)));
+    task.AddTask(20,false,[&x] { x = 2;});
+    std::this_thread::sleep_for((std::chrono::milliseconds(25)));
     ASSERT_EQ(x,2);
-    std::this_thread::sleep_for((std::chrono::milliseconds(600)));
+    std::this_thread::sleep_for((std::chrono::milliseconds(20)));
     ASSERT_EQ(x,3);
+}
+
+TEST(TEST_TIMERTASK,TIMER_TASK_RECURSE){
+    hzd::TimerTask timer;
+    int x = 0;
+    auto id = timer.AddTask(10,true,[&]{
+        x++;
+    });
+    std::this_thread::sleep_for((std::chrono::milliseconds(55)));
+    timer.CancelTask(id);
+
+    timer.AddTimesTask(10,5,[&]{ x++; });
+
+    std::this_thread::sleep_for((std::chrono::milliseconds(55)));
+    ASSERT_EQ(x,10);
 }
 
 
