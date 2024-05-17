@@ -218,19 +218,19 @@ TEST(TEST_FILESYSTEM,LIST_DIR_AND_ABS) {
 
 TEST(TEST_TIMERTASK,TIMER_TASK) {
     hzd::TimerTask task(true);
-    int x = 0;
-    task.AddTask(20,false,[&x] { x += 1; });
-    ASSERT_NE(x,1);
+    std::atomic<int> x(0);
+    task.AddTask(std::chrono::milliseconds(20),false,[&x] { x += 1; });
+    ASSERT_EQ(x,0);
     std::this_thread::sleep_for(std::chrono::milliseconds(25));
     ASSERT_EQ(x,1);
-    auto ret = task.AddTask(20,false,[&x] { x -= 1;});
+    auto ret = task.AddTask(std::chrono::milliseconds(20),false,[&x] { x -= 1;});
     task.CancelTask(ret);
     std::this_thread::sleep_for(std::chrono::milliseconds(25));
     ASSERT_EQ(x,1);
 
-    task.AddTask(50,false,[&x] { x = 3; });
+    task.AddTask(std::chrono::milliseconds(50),false,[&x] { x = 3; });
     std::this_thread::sleep_for((std::chrono::milliseconds(10)));
-    task.AddTask(20,false,[&x] { x = 2;});
+    task.AddTask(std::chrono::milliseconds(20),false,[&x] { x = 2;});
     std::this_thread::sleep_for((std::chrono::milliseconds(25)));
     ASSERT_EQ(x,2);
     std::this_thread::sleep_for((std::chrono::milliseconds(20)));
@@ -239,16 +239,13 @@ TEST(TEST_TIMERTASK,TIMER_TASK) {
 
 TEST(TEST_TIMERTASK,TIMER_TASK_RECURSE){
     hzd::TimerTask timer;
-    int x = 0;
-    auto id = timer.AddTask(10,true,[&]{
-        x++;
-    });
+    std::atomic<int> x(0);
+    auto id = timer.AddTask(std::chrono::milliseconds(10),true,[&]{x++;});
     std::this_thread::sleep_for((std::chrono::milliseconds(55)));
     timer.CancelTask(id);
-
-    timer.AddTimesTask(10,5,[&]{ x++; });
-
-    std::this_thread::sleep_for((std::chrono::milliseconds(55)));
+    ASSERT_EQ(x,5);
+    timer.AddTimesTask(std::chrono::milliseconds(10),5,[&]{ x++; });
+    std::this_thread::sleep_for((std::chrono::milliseconds(60)));
     ASSERT_EQ(x,10);
 }
 

@@ -56,21 +56,22 @@ namespace hzd {
         ~TimerTask();
         // 添加定时任务
         // add timer task
-        template<class Func,class... Args>
+        template<class Rep,class Period,class Func,class... Args>
         uint32_t AddTask(
-                int64_t                     delay,
-                bool                        is_recurse,
-                Func&&                      func,
-                Args&&...                   args
+                const std::chrono::duration<Rep,Period>&    delay,
+                bool                                        is_recurse,
+                Func&&                                      func,
+                Args&&...                                   args
         ) {
             if(timer_mutex){
                 auto function = [func,args...] { func(args...); };
                 std::unique_lock<std::mutex> guard(*timer_mutex);
+                long _delay = std::chrono::duration_cast<std::chrono::milliseconds>(delay).count();
                 task_id_map[timer_gid] = &(*tasks.insert(
                         TimerTaskNode{
                                 timer_gid,
-                                GetTicks() + delay,
-                                delay,
+                                GetTicks() + _delay,
+                                _delay,
                                 is_recurse,
                                 0,
                                 std::move(function)
@@ -81,11 +82,12 @@ namespace hzd {
                 return timer_gid++;
             }
             auto function = [func,args...] { func(args...); };
+            long _delay = std::chrono::duration_cast<std::chrono::milliseconds>(delay).count();
             task_id_map[timer_gid] = &(*tasks.insert(
                     TimerTaskNode{
                             timer_gid,
-                            GetTicks() + delay,
-                            delay,
+                            GetTicks() + _delay,
+                            _delay,
                             is_recurse,
                             0,
                             std::move(function)
@@ -93,22 +95,25 @@ namespace hzd {
             ).first);
             return timer_gid++;
         };
-        template<class Func,class... Args>
+        // 添加定时任务
+        // add timer task
+        template<class Rep,class Period,class Func,class... Args>
         uint32_t AddTimesTask(
-                int64_t                     delay,
-                uint16_t                    expect_times,
-                Func&&                      func,
-                Args&&...                  args
+                const std::chrono::duration<Rep,Period>&    delay,
+                uint16_t                                    expect_times,
+                Func&&                                      func,
+                Args&&...                                   args
         ) {
             if(expect_times <= 0) return 0;
             if(timer_mutex){
                 auto function = [func,args...] { func(args...); };
                 std::unique_lock<std::mutex> guard(*timer_mutex);
+                long _delay = std::chrono::duration_cast<std::chrono::milliseconds>(delay).count();
                 task_id_map[timer_gid] = &(*tasks.insert(
                         TimerTaskNode{
                                 timer_gid,
-                                GetTicks() + delay,
-                                delay,
+                                GetTicks() + _delay,
+                                _delay,
                                 false,
                                 expect_times,
                                 std::move(function)
@@ -119,11 +124,12 @@ namespace hzd {
                 return timer_gid++;
             }
             auto function = [func,args...] { func(args...); };
+            long _delay = std::chrono::duration_cast<std::chrono::milliseconds>(delay).count();
             task_id_map[timer_gid] = &(*tasks.insert(
                     TimerTaskNode{
                             timer_gid,
-                            GetTicks() + delay,
-                            delay,
+                            GetTicks() + _delay,
+                            _delay,
                             false,
                             expect_times,
                             std::move(function)
