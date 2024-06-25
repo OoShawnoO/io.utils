@@ -44,7 +44,6 @@ namespace hzd {
 
     void TimerTask::AddTask(const TimerTaskNode& task) {
         if(timer_mutex){
-            std::unique_lock<std::mutex> guard(*timer_mutex);
             task_id_map[task.id] = &(*tasks.insert({
                   task.id,
                   GetTicks() + task.delay,
@@ -53,8 +52,7 @@ namespace hzd {
                   static_cast<uint16_t>(task.expect-1),
                   task.function
             }).first);
-            guard.unlock();
-            timer_condition_variable->notify_all();
+            timer_condition_variable->notify_one();
             timer_semaphore->Signal();
             return;
         }
@@ -66,12 +64,12 @@ namespace hzd {
                static_cast<uint16_t>(task.expect-1),
                task.function
         }).first);
-    };
+    }
 
 
     bool TimerTask::CancelTask(uint32_t id) {
         if(timer_mutex) {
-            std::unique_lock<std::mutex> guard(*timer_mutex);
+            std::lock_guard<std::mutex> guard(*timer_mutex);
             auto id_iter = task_id_map.find(id);
             if(id_iter == task_id_map.end()) {
                 MOLE_WARN(io_timer_task_channel,"no such task or timer task had already expired");
@@ -84,8 +82,7 @@ namespace hzd {
             }
             tasks.erase(iter);
             task_id_map.erase(id_iter);
-            guard.unlock();
-            timer_condition_variable->notify_all();
+            timer_condition_variable->notify_one();
             return true;
         }
         auto id_iter = task_id_map.find(id);
@@ -104,22 +101,6 @@ namespace hzd {
     }
 
     bool TimerTask::RunTimerTask() {
-        if(timer_mutex){
-            std::unique_lock<std::mutex> guard(*timer_mutex);
-            auto iter = tasks.begin();
-            if(tasks.end() != iter && iter->expire <= GetTicks()) {
-                iter->function();
-                task_id_map.erase(iter->id);
-                if(iter->recurse || iter->expect > 0) {
-                    guard.unlock();
-                    AddTask(*iter);
-                    guard.lock();
-                }
-                tasks.erase(iter);
-                return true;
-            }
-            return false;
-        }
         auto iter = tasks.begin();
         if(tasks.end() != iter && iter->expire <= GetTicks()) {
             iter->function();
@@ -166,8 +147,8 @@ namespace hzd {
                 ) != std::cv_status::timeout) {
                     goto REIN;
                 }
+                while(timer_task.RunTimerTask());
             }
-            while(timer_task.RunTimerTask());
         }
     }
 

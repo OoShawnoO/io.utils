@@ -2,7 +2,7 @@
   ******************************************************************************
   * @file           : FileSystem.h
   * @author         : huzhida
-  * @brief          : ÎªÎŞstd::filesystemµÄC++±ê×¼×¼±¸µÄ¿çÆ½Ì¨ÎÄ¼şÏµÍ³²Ù×÷¿â
+  * @brief          : ä¸ºæ— std::filesystemçš„C++æ ‡å‡†å‡†å¤‡çš„è·¨å¹³å°æ–‡ä»¶ç³»ç»Ÿæ“ä½œåº“
   * @date           : 2024/4/18
   ******************************************************************************
   */
@@ -18,84 +18,84 @@ namespace hzd {
     namespace filesystem {
 
         /**
-         * ÅĞ¶ÏÊÇ·ñ´æÔÚÎÄ¼ş»òÄ¿Â¼
-         * @return true±íÊ¾´æÔÚ,false±íÊ¾²»´æÔÚ & true for exist,false for not exist
+         * åˆ¤æ–­æ˜¯å¦å­˜åœ¨æ–‡ä»¶æˆ–ç›®å½•
+         * @return trueè¡¨ç¤ºå­˜åœ¨,falseè¡¨ç¤ºä¸å­˜åœ¨ & true for exist,false for not exist
          */
         bool exists(const std::string &path);
         /**
-         * ÊÇ·ñÎªÎÄ¼ş & whether file or not
-         * @brief Ö»ÓÃµ±ÎÄ¼ş»òÄ¿Â¼ÕæÊµ´æÔÚÊ±²Å»á³É¹¦ & only success when file or dir exist
-         * @return true±íÊ¾ÊÇÎÄ¼ş,false±íÊ¾²»ÊÇÎÄ¼ş & true for file type,false for not or not exist
+         * æ˜¯å¦ä¸ºæ–‡ä»¶ & whether file or not
+         * @brief åªç”¨å½“æ–‡ä»¶æˆ–ç›®å½•çœŸå®å­˜åœ¨æ—¶æ‰ä¼šæˆåŠŸ & only success when file or dir exist
+         * @return trueè¡¨ç¤ºæ˜¯æ–‡ä»¶,falseè¡¨ç¤ºä¸æ˜¯æ–‡ä»¶ & true for file type,false for not or not exist
          */
         bool is_file(const std::string &path);
 
         /**
-         * ÊÇ·ñÎªÄ¿Â¼ & whether directory or not
-         * @brief Ö»ÓÃµ±ÎÄ¼ş»òÄ¿Â¼ÕæÊµ´æÔÚÊ±²Å»á³É¹¦ & only success when file or dir exist
-         * @return true±íÊ¾ÊÇÄ¿Â¼,false±íÊ¾²»ÊÇÄ¿Â¼ & true for directory type,false for not or not exist
+         * æ˜¯å¦ä¸ºç›®å½• & whether directory or not
+         * @brief åªç”¨å½“æ–‡ä»¶æˆ–ç›®å½•çœŸå®å­˜åœ¨æ—¶æ‰ä¼šæˆåŠŸ & only success when file or dir exist
+         * @return trueè¡¨ç¤ºæ˜¯ç›®å½•,falseè¡¨ç¤ºä¸æ˜¯ç›®å½• & true for directory type,false for not or not exist
          */
         bool is_directory(const std::string &path);
 
         /**
-         * ¸´ÖÆÔ´ÎÄ¼şµ½Ä¿±êÂ·¾¶ÏÂ & copy src file to destination path
-         * @brief Ö»ÓÃµ±ÎÄ¼ş»òÄ¿Â¼ÕæÊµ´æÔÚÊ±²Å»á³É¹¦ & only success when file or dir exist
-         * @param src_path Ô´Â·¾¶ & source path
-         * @param dest_path Ä¿±êÂ·¾¶ & destination path
-         * @return true±íÊ¾³É¹¦,false±íÊ¾Ê§°Ü & true for success,false for failed
+         * å¤åˆ¶æºæ–‡ä»¶åˆ°ç›®æ ‡è·¯å¾„ä¸‹ & copy src file to destination path
+         * @brief åªç”¨å½“æ–‡ä»¶æˆ–ç›®å½•çœŸå®å­˜åœ¨æ—¶æ‰ä¼šæˆåŠŸ & only success when file or dir exist
+         * @param src_path æºè·¯å¾„ & source path
+         * @param dest_path ç›®æ ‡è·¯å¾„ & destination path
+         * @return trueè¡¨ç¤ºæˆåŠŸ,falseè¡¨ç¤ºå¤±è´¥ & true for success,false for failed
          */
         bool copy(const std::string &src_path, const std::string &dest_path, bool is_overwrite = false);
 
         /**
-         * »ñÈ¡µ±Ç°¹¤×÷Ä¿Â¼µÄ¾ø¶ÔÂ·¾¶ & get current work dir absolute path
-         * @return µ±Ç°¹¤×÷Ä¿Â¼µÄ¾ø¶ÔÂ·¾¶ & current work dir absolute path
+         * è·å–å½“å‰å·¥ä½œç›®å½•çš„ç»å¯¹è·¯å¾„ & get current work dir absolute path
+         * @return å½“å‰å·¥ä½œç›®å½•çš„ç»å¯¹è·¯å¾„ & current work dir absolute path
          */
         std::string pwd();
 
         /**
-         * ´´½¨Ä¿Â¼ & create directory
-         * @return true±íÊ¾³É¹¦,false±íÊ¾Ê§°Ü & true for success,false for failed
+         * åˆ›å»ºç›®å½• & create directory
+         * @return trueè¡¨ç¤ºæˆåŠŸ,falseè¡¨ç¤ºå¤±è´¥ & true for success,false for failed
          */
         bool createdir(const std::string &path);
 
         /**
-         *  ÎÄ¼ş´óĞ¡ & file size
-         *  @brief Ö»ÓÃµ±ÎÄ¼ş»òÄ¿Â¼ÕæÊµ´æÔÚÊ±²Å»á³É¹¦ & only success when file or dir exist
-         *  @return ÎÄ¼ş´óĞ¡,-1±íÊ¾ÎÄ¼ş²»´æÔÚ & file size,-1 for file not exist
+         *  æ–‡ä»¶å¤§å° & file size
+         *  @brief åªç”¨å½“æ–‡ä»¶æˆ–ç›®å½•çœŸå®å­˜åœ¨æ—¶æ‰ä¼šæˆåŠŸ & only success when file or dir exist
+         *  @return æ–‡ä»¶å¤§å°,-1è¡¨ç¤ºæ–‡ä»¶ä¸å­˜åœ¨ & file size,-1 for file not exist
          */
         long long int fsize(const std::string &path);
 
         /**
-         * É¾³ıÎÄ¼ş»òÄ¿Â¼ & delete file or directory
-         * @brief Ö»ÓÃµ±ÎÄ¼ş»òÄ¿Â¼ÕæÊµ´æÔÚÊ±²Å»á³É¹¦ & only success when file or dir exist
-         * @return true±íÊ¾³É¹¦,false±íÊ¾Ê§°Ü & true for success,false for failed
+         * åˆ é™¤æ–‡ä»¶æˆ–ç›®å½• & delete file or directory
+         * @brief åªç”¨å½“æ–‡ä»¶æˆ–ç›®å½•çœŸå®å­˜åœ¨æ—¶æ‰ä¼šæˆåŠŸ & only success when file or dir exist
+         * @return trueè¡¨ç¤ºæˆåŠŸ,falseè¡¨ç¤ºå¤±è´¥ & true for success,false for failed
          */
         bool remove(const std::string &path);
 
         /**
-         * ÒÆ¶¯ÎÄ¼ş»òÖØÃüÃû & move file or directory,or rename
-         * @brief Ö»ÓÃµ±ÎÄ¼ş»òÄ¿Â¼ÕæÊµ´æÔÚÊ±²Å»á³É¹¦ & only success when file or dir exist
-         * @return true±íÊ¾³É¹¦,false±íÊ¾Ê§°Ü & true for success,false for failed
+         * ç§»åŠ¨æ–‡ä»¶æˆ–é‡å‘½å & move file or directory,or rename
+         * @brief åªç”¨å½“æ–‡ä»¶æˆ–ç›®å½•çœŸå®å­˜åœ¨æ—¶æ‰ä¼šæˆåŠŸ & only success when file or dir exist
+         * @return trueè¡¨ç¤ºæˆåŠŸ,falseè¡¨ç¤ºå¤±è´¥ & true for success,false for failed
          */
         bool move(const std::string &src_path, const std::string &dest_path);
 
         /**
-         * ÖØÃüÃûÎÄ¼ş & rename file
-         * @brief Ö»ÓÃµ±ÎÄ¼ş»òÄ¿Â¼ÕæÊµ´æÔÚÊ±²Å»á³É¹¦ & only success when file or dir exist
-         * @return true±íÊ¾³É¹¦,false±íÊ¾Ê§°Ü & true for success,false for failed
+         * é‡å‘½åæ–‡ä»¶ & rename file
+         * @brief åªç”¨å½“æ–‡ä»¶æˆ–ç›®å½•çœŸå®å­˜åœ¨æ—¶æ‰ä¼šæˆåŠŸ & only success when file or dir exist
+         * @return trueè¡¨ç¤ºæˆåŠŸ,falseè¡¨ç¤ºå¤±è´¥ & true for success,false for failed
          */
         bool rename(const std::string& old_name,const std::string& new_name);
 
         /**
-         * ÁĞ±íÄ¿Â¼ÏÂÎÄ¼ş»òÄ¿Â¼Ãû & list files or dirs in path
-         * @brief Ö»ÓÃµ±ÎÄ¼ş»òÄ¿Â¼ÕæÊµ´æÔÚÊ±²Å»á³É¹¦ & only success when file or dir exist
-         * @return true±íÊ¾³É¹¦,false±íÊ¾Ê§°Ü & true for success,false for failed
+         * åˆ—è¡¨ç›®å½•ä¸‹æ–‡ä»¶æˆ–ç›®å½•å & list files or dirs in path
+         * @brief åªç”¨å½“æ–‡ä»¶æˆ–ç›®å½•çœŸå®å­˜åœ¨æ—¶æ‰ä¼šæˆåŠŸ & only success when file or dir exist
+         * @return trueè¡¨ç¤ºæˆåŠŸ,falseè¡¨ç¤ºå¤±è´¥ & true for success,false for failed
          */
         bool listdir(const std::string& path,std::vector<std::string>& dirs_name,std::vector<std::string>& files_name);
 
         /**
-         * »ñÈ¡ÎÄ¼ş»òÄ¿Â¼µÄ¾ø¶ÔÂ·¾¶ & get absolute path for file or dir
-         * @brief Ö»ÓÃµ±ÎÄ¼ş»òÄ¿Â¼ÕæÊµ´æÔÚÊ±²Å»á³É¹¦ & only success when file or dir exist
-         * @return true±íÊ¾³É¹¦,false±íÊ¾Ê§°Ü & true for success,false for failed
+         * è·å–æ–‡ä»¶æˆ–ç›®å½•çš„ç»å¯¹è·¯å¾„ & get absolute path for file or dir
+         * @brief åªç”¨å½“æ–‡ä»¶æˆ–ç›®å½•çœŸå®å­˜åœ¨æ—¶æ‰ä¼šæˆåŠŸ & only success when file or dir exist
+         * @return trueè¡¨ç¤ºæˆåŠŸ,falseè¡¨ç¤ºå¤±è´¥ & true for success,false for failed
          */
         bool absolute(const std::string& path,std::string& absolute_path);
     }

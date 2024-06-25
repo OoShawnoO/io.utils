@@ -65,8 +65,8 @@ namespace hzd {
         ) {
             if(timer_mutex){
                 auto function = [func,args...] { func(args...); };
-                std::unique_lock<std::mutex> guard(*timer_mutex);
                 long _delay = std::chrono::duration_cast<std::chrono::milliseconds>(delay).count();
+                std::lock_guard<std::mutex> guard(*timer_mutex);
                 task_id_map[timer_gid] = &(*tasks.insert(
                         TimerTaskNode{
                                 timer_gid,
@@ -77,9 +77,10 @@ namespace hzd {
                                 std::move(function)
                         }
                 ).first);
-                timer_condition_variable->notify_all();
+                auto id = timer_gid++;
                 timer_semaphore->Signal();
-                return timer_gid++;
+                timer_condition_variable->notify_one();
+                return id;
             }
             auto function = [func,args...] { func(args...); };
             long _delay = std::chrono::duration_cast<std::chrono::milliseconds>(delay).count();
@@ -107,8 +108,8 @@ namespace hzd {
             if(expect_times <= 0) return 0;
             if(timer_mutex){
                 auto function = [func,args...] { func(args...); };
-                std::unique_lock<std::mutex> guard(*timer_mutex);
                 long _delay = std::chrono::duration_cast<std::chrono::milliseconds>(delay).count();
+                std::lock_guard<std::mutex> guard(*timer_mutex);
                 task_id_map[timer_gid] = &(*tasks.insert(
                         TimerTaskNode{
                                 timer_gid,
@@ -119,9 +120,10 @@ namespace hzd {
                                 std::move(function)
                         }
                 ).first);
-                timer_condition_variable->notify_all();
+                auto id = timer_gid++;
                 timer_semaphore->Signal();
-                return timer_gid++;
+                timer_condition_variable->notify_one();
+                return id;
             }
             auto function = [func,args...] { func(args...); };
             long _delay = std::chrono::duration_cast<std::chrono::milliseconds>(delay).count();

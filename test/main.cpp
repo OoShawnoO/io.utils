@@ -242,13 +242,12 @@ TEST(TEST_TIMERTASK,TIMER_TASK_RECURSE){
     std::atomic<int> x(0);
     auto id = timer.AddTask(std::chrono::milliseconds(10),true,[&]{x++;});
     std::this_thread::sleep_for((std::chrono::milliseconds(55)));
-    timer.CancelTask(id);
     ASSERT_EQ(x,5);
+    timer.CancelTask(id);
     timer.AddTimesTask(std::chrono::milliseconds(10),5,[&]{ x++; });
-    std::this_thread::sleep_for((std::chrono::milliseconds(60)));
+    std::this_thread::sleep_for((std::chrono::milliseconds(55)));
     ASSERT_EQ(x,10);
 }
-
 
 int main() {
     testing::InitGoogleTest();

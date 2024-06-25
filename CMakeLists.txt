@@ -33,8 +33,7 @@ add_executable(test_ test/main.cpp
 
 #add_library(Socket SHARED ${SOCKET_SOURCES})
 #add_library(FileSystem SHARED ${FILESYSTEM_SOURCES})
+#add_library(TimerTask SHARED ${TIMERTASK_SOURCES})
 
 target_link_libraries(test_ PRIVATE Mole)
 target_link_libraries(test_ PRIVATE GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
-
-add_test(test_ ${CMAKE_BINARY_DIR}/test_)
